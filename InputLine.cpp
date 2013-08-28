@@ -515,13 +515,15 @@ void InputLine::readLetters(char key){
 								jumpField(true, false, true);
 							}
 						} 
-
-						inputLine[cursorPoint] = alphaNumeric[pos-1][charCount];
-
+						//check if the input mode is still alphabetic
+						//it might have been changed by jumping to next input field
+						if(currentReadMode == 1){
+							inputLine[cursorPoint] = alphaNumeric[pos-1][charCount];
+							cursorMove = true;
+							cursorMoveTimer = CURSORMOVETIME;
+							lastChar = key;
+						}
 						displayInput();	  
-						cursorMove = true;
-						cursorMoveTimer = CURSORMOVETIME;
-						lastChar = key;
 					}
 				}
 					
