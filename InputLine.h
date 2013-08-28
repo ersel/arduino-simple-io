@@ -77,6 +77,9 @@ private:
 	bool cyclicRotation; //jump from last inputfield to first or reverse
 	
 	int checkSpace(int start, int length);
+	void lcdSetCursor(int col, int row);
+	void lcdPrint(char c);
+	char keyPadReadKey();
 	void displayInput();
 	void cursorBlinker();
 	void readNumbers(char key);

@@ -47,18 +47,27 @@ InputLine::InputLine(int inputRows, int noOfColumns, bool cyclicRotationChoice, 
 	
 }
 
+void InputLine::lcdSetCursor(int col, int row){
+	lcd->setCursor(col, row);
+}
+
+void InputLine::lcdPrint(char c){
+	lcd->print(c);
+}
+
+char InputLine::keyPadReadKey(){
+	return kpd->getKey();
+}
+
 int InputLine::checkSpace(int start, int length){
 	//check if there is space for new label
 	if(start+length<=screenColumnSize){	
 		for(int i = 0; i < length; i++){
 			if(!avaliable[start + i]){
-				Serial.println(start+i);
-						Serial.println("fail2");
 				return 0; //false
 			}
 		}
 	} else {
-		Serial.println("fail1");
 		return 0;
 	}
 	return 1; //true
@@ -66,8 +75,8 @@ int InputLine::checkSpace(int start, int length){
 
 void InputLine::displayInput(){
     for(int i = 0; i < screenColumnSize; i++){
-      lcd->setCursor(i, row);
-      lcd->print(inputLine[i]);
+      lcdSetCursor(i, row);
+      lcdPrint(inputLine[i]);
     }
 }
 
@@ -75,11 +84,11 @@ void InputLine::cursorBlinker(){
 		
 	if(cursorWait < 0){
 		if(cursorActive){
-			lcd->print("_");
+			lcdPrint('_');
 			cursorActive = false;
 		  		
 		} else {
-			lcd->print(inputLine[cursorPoint]);
+			lcdPrint(inputLine[cursorPoint]);
 			cursorActive = true;		
 		}
 		cursorWait = CURSORBLINKRATE;
@@ -99,12 +108,17 @@ int InputLine::findSpace(int length){
 			}
 		}
 	}
-	return NULL;
+	return -1;
 }
+
 bool InputLine::addLabel(char* text){
 	int length = strlen(text);
 	int start = findSpace(length) + 1;
-	return addLabel(start, text);
+	if(start != 0){
+		return addLabel(start, text);
+	} else {
+		return false;
+	}
 }
 
 bool InputLine::addLabel(int start, char* text){
@@ -128,16 +142,16 @@ bool InputLine::addLabel(int start, char* text){
 
 bool InputLine::addInputField(int length, int inputMode){
 	int start = findSpace(length) + 1;
-	Serial.println("test1");
-	Serial.println(start);
-	Serial.println("test1");
-	return addInputField(start, length, inputMode);
+	if(start != 0){
+		return addInputField(start, length, inputMode);
+	} else {
+		return false;
+	}
+	
 }
 
 bool InputLine::addInputField(int start, int length, int inputMode){
-	 int spaceAvaliable = checkSpace(start-1, length);
-	Serial.println(spaceAvaliable);
-Serial.println("spaceavail");	
+	 int spaceAvaliable = checkSpace(start-1, length);	
 	 if(spaceAvaliable == 1){
 		start--;
 		 // try to allocate memory for new input field 
@@ -192,7 +206,12 @@ Serial.println("spaceavail");
 
 bool InputLine::addInputField(int length, int inputMode, int defaultInputMode, bool smartInputType){
 	int start = findSpace(length) + 1;
-	return addInputField(start, length, inputMode, defaultInputMode, smartInputType);
+	if(start != 0){
+		return addInputField(start, length, inputMode, defaultInputMode, smartInputType);
+	} else {
+		return false;
+	}
+	
 }
 
 bool InputLine::addInputField(int start, int length, int inputMode, int defaultInputMode, bool smartInputType){
@@ -354,10 +373,10 @@ bool InputLine::addInputField(int start, int length, int inputMode, int defaultI
  }
  
 void InputLine::readInput(){
-  lcd->setCursor(cursorPoint, row);
+  lcdSetCursor(cursorPoint, row);
   cursorBlinker(); 
   
-  char key = kpd->getKey();
+  char key = keyPadReadKey();
   
   switch(currentReadMode){
     case 0: readNumbers(key); break;
