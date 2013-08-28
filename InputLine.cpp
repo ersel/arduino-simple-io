@@ -20,14 +20,10 @@ InputLine::InputLine(int inputRows, int noOfColumns, bool cyclicRotationChoice, 
 	kpd = kpdRef;
 	cyclicRotation = cyclicRotationChoice;
 	
-	//char* inputLine = (char *)malloc(noOfColumns*sizeof(char));
-	//inputLine[0] = '\0';
 	for(int i = 0; i < noOfColumns; i++){
 		inputLine[i] = ' ';
     }
 
-	//avaliable = (bool*)malloc(noOfColumns * sizeof(bool));
-	//avaliable[0] = true;
 	for(int i = 0; i < noOfColumns; i++){
 			avaliable[i] = true;
 	}
@@ -37,6 +33,7 @@ InputLine::InputLine(int inputRows, int noOfColumns, bool cyclicRotationChoice, 
 	cursorWait = CURSORBLINKRATE;
 	lastChar = '>';
 	charCount = 0;
+	inputActive = true;
 	cursorActive = true;
 	cursorMove = false;
 	cursorMoveTimer = CURSORMOVETIME;
@@ -57,6 +54,15 @@ void InputLine::lcdPrint(char c){
 
 char InputLine::keyPadReadKey(){
 	return kpd->getKey();
+}
+
+void InputLine::enableInput(bool enable){
+	inputActive = enable;
+	// if input is closed print the final result
+	// in order to make sure cursor is not left visible
+	if(!enable){
+		displayInput();
+	}
 }
 
 int InputLine::checkSpace(int start, int length){
@@ -373,17 +379,18 @@ bool InputLine::addInputField(int start, int length, int inputMode, int defaultI
  }
  
 void InputLine::readInput(){
-  lcdSetCursor(cursorPoint, row);
-  cursorBlinker(); 
-  
-  char key = keyPadReadKey();
-  
-  switch(currentReadMode){
-    case 0: readNumbers(key); break;
-    case 1: readLetters(key); break;
-    default: break;
-  }
-  
+	if(inputActive){
+		lcdSetCursor(cursorPoint, row);
+		cursorBlinker(); 
+	  
+		char key = keyPadReadKey();
+	  
+		switch(currentReadMode){
+			case 0: readNumbers(key); break;
+			case 1: readLetters(key); break;
+			default: break;
+		}
+	}
 }
 
 void InputLine::readLetters(char key){

@@ -52,10 +52,14 @@ public:
 	bool addInputField(int start, int length, int inputMode, int defaultInputMode, bool smartInputType);
 	
 	void readInput();
-	//void closeInput();
+	
+	/* enable/disable reading input */
+	void enableInput(bool enable);
+	
+	/* return methods */
 	char* getInputFieldAsCharArr(int fieldNo);
 	int getInputFieldAsInt(int fieldNo);
-	int findSpace(int length);
+	
 
 private:
 
@@ -75,8 +79,10 @@ private:
 	bool cursorMove;
 	int cursorMoveTimer;
 	bool cyclicRotation; //jump from last inputfield to first or reverse
+	bool inputActive;
 	
 	int checkSpace(int start, int length);
+	int findSpace(int length);
 	void lcdSetCursor(int col, int row);
 	void lcdPrint(char c);
 	char keyPadReadKey();
