@@ -1,30 +1,27 @@
 #include <InputLine.h>
 
+/* alphanumeric key mapping */
+/* [1] [2] [3]*/
+/* [4] [5] [6]*/
+/* [7] [8] [9]*/
 char alphaNumeric[9][3] = {
-{'a','b','c'},
-{'d','e','f'},
-{'g','h','i'},
-{'j','k','l'},
-{'m','n','o'},
-{'p','q','r'},
-{'s','t','u'},
-{'v','w','x'},
-{'y','z','-'},
+{'a','b','c'},{'d','e','f'},{'g','h','i'},
+{'j','k','l'},{'m','n','o'},{'p','q','r'},
+{'s','t','u'},{'v','w','x'},{'y','z','-'},
 };
 
-// <<constructor>> Allows custom keymap, pin configuration, and keypad sizes.
-InputLine::InputLine(int inputRows, int noOfColumns, bool cyclicRotationChoice, LiquidCrystal *lcdRef, Keypad_I2C *kpdRef) {
-	row = inputRows;
-	screenColumnSize = noOfColumns;
+// <<constructor>> Allows input line on selected row, cyclic rotation, lcd object ref, keypad reference
+InputLine::InputLine(int inputRow, bool cyclicRotationChoice, LiquidCrystal *lcdRef, Keypad_I2C *kpdRef) {
+	row = inputRow;
 	lcd = lcdRef;
 	kpd = kpdRef;
 	cyclicRotation = cyclicRotationChoice;
 	
-	for(int i = 0; i < noOfColumns; i++){
+	for(int i = 0; i < SCREENCOLUMNSIZE; i++){
 		inputLine[i] = ' ';
     }
 
-	for(int i = 0; i < noOfColumns; i++){
+	for(int i = 0; i < SCREENCOLUMNSIZE; i++){
 			avaliable[i] = true;
 	}
 	
@@ -67,7 +64,7 @@ void InputLine::enableInput(bool enable){
 
 int InputLine::checkSpace(int start, int length){
 	//check if there is space for new label
-	if(start+length<=screenColumnSize){	
+	if(start+length<=SCREENCOLUMNSIZE){	
 		for(int i = 0; i < length; i++){
 			if(!avaliable[start + i]){
 				return 0; //false
@@ -79,15 +76,89 @@ int InputLine::checkSpace(int start, int length){
 	return 1; //true
 }
 
+void InputLine::moveCursorForward(){
+	//move cursor forwards if there is still space in this field
+	// else jump to next input field
+	if(cursorPoint < active->finish){
+		cursorPoint++;
+		cursorMove = false;
+		displayInput();
+	} else {
+		if(jumpField(true, true, true)){
+			displayInput();
+		}
+	}
+}
+
+void InputLine::moveCursorBackward(){
+	//move cursor backwards if there is still space in this field
+	// else jump to previous input field
+	if(cursorPoint > active->start){
+		cursorPoint--;
+		cursorMove = false;
+		displayInput();
+	} else {
+		if(jumpField(false, true, true)){
+			displayInput();
+		}
+	}
+}
+
+void InputLine::removeCurrentElementMoveForward(){
+	// remove current element from active input field
+	// else jump to next input field and remove first element
+	if(cursorPoint < active->finish){
+		inputLine[cursorPoint] = ' ';
+		displayInput();
+		cursorPoint++;
+		cursorMove = false;
+		cursorMoveTimer = CURSORMOVETIME;				
+	} else if(cursorPoint == active->finish){
+		inputLine[cursorPoint] = ' ';
+		jumpField(true, false, true);
+		displayInput();
+	}
+}
+
+void InputLine::removeCurrentElementMoveBackward(){
+	// remove current element from active input field
+	// else jump to previous input field and remove last element
+	if(cursorPoint > active->start){
+		inputLine[cursorPoint] = ' ';
+		cursorPoint--;
+		displayInput();
+		cursorMove = false;
+	} else if(cursorPoint == active->start) {
+		inputLine[cursorPoint] = ' ';
+		jumpField(false, false, true);
+		displayInput();
+	}
+}
+
+void InputLine::switchInputMode(){
+	// if alphanumeric input is active, allow switching between letters/numbers
+	if(active->inputMode == 3){
+		if(currentReadMode == 1){
+			currentReadMode = 0;
+		} else {
+			currentReadMode = 1;
+		}
+		if(active->smartInput){
+			active->defaultInputMode = currentReadMode;
+		}
+		cursorMove = false;
+		cursorMoveTimer = CURSORMOVETIME;
+	}
+}
+
 void InputLine::displayInput(){
-    for(int i = 0; i < screenColumnSize; i++){
+    for(int i = 0; i < SCREENCOLUMNSIZE; i++){
       lcdSetCursor(i, row);
       lcdPrint(inputLine[i]);
     }
 }
 
 void InputLine::cursorBlinker(){
-		
 	if(cursorWait < 0){
 		if(cursorActive){
 			lcdPrint('_');
@@ -104,8 +175,7 @@ void InputLine::cursorBlinker(){
 }
 
 int InputLine::findSpace(int length){
-	int j;
-	for(int i = 0; i + length <= screenColumnSize; i++){
+	for(int i = 0; i + length <= SCREENCOLUMNSIZE; i++){
 		if(avaliable[i]){
 			if(checkSpace(i, length) == 1){
 				return i;
@@ -394,7 +464,6 @@ void InputLine::readInput(){
 }
 
 void InputLine::readLetters(char key){
-    
 	if(cursorMove){
 		if(cursorMoveTimer < 1){
 		    if(cursorPoint < active->finish){
@@ -415,82 +484,12 @@ void InputLine::readLetters(char key){
 	}
 	
 	switch (key){
-		
-		case 'A': break;
-		
-		case 'B':
-		    //move cursor forwards if there is still space in this field
-			// else jump to next input field
-			if(cursorPoint < active->finish){
-				cursorPoint++;
-				cursorMove = false;
-				displayInput();
-			} else {
-				if(jumpField(true, true, true)){
-					displayInput();
-				}
-			}
-		break;
-		
-		case 'C':
-		    //move cursor backwards if there is still space in this field
-			// else jump to previous input field
-			if(cursorPoint > active->start){
-				cursorPoint--;
-				cursorMove = false;
-				displayInput();
-			} else {
-				if(jumpField(false, true, true)){
-					displayInput();
-				}
-			}
-		  break;
-		  
-		case 'D': 
-			// if alphanumeric input is active, allow switching between letters/numbers
-			if(active->inputMode == 3){
-				if(currentReadMode == 1){
-					currentReadMode = 0;
-				} else {
-					currentReadMode = 1;
-				}
-				if(active->smartInput){
-					active->defaultInputMode = currentReadMode;
-				}
-				cursorMove = false;
-				cursorMoveTimer = CURSORMOVETIME;
-			}
-		break;
-		
-		case '*':
-			// remove current element from active input field
-			// else jump to previous input field and remove last element
-			if(cursorPoint > active->start){
-				inputLine[cursorPoint] = ' ';
-				cursorPoint--;
-				displayInput();
-				cursorMove = false;
-			} else if(cursorPoint == active->start) {
-				inputLine[cursorPoint] = ' ';
-				jumpField(false, false, true);
-				displayInput();
-			}		
-		break;
-		case '#':
-			// remove current element from active input field
-			// else jump to next input field and remove first element
-			if(cursorPoint < active->finish){
-				inputLine[cursorPoint] = ' ';
-				displayInput();
-				cursorPoint++;
-				cursorMove = false;
-				cursorMoveTimer = CURSORMOVETIME;				
-			} else if(cursorPoint == active->finish){
-				inputLine[cursorPoint] = ' ';
-				jumpField(true, false, true);
-				displayInput();
-			}
-		break;
+		case 'A': enableInput(false); break;
+		case 'B': moveCursorForward(); break;
+		case 'C': moveCursorBackward(); break;		  
+		case 'D': switchInputMode(); break;
+		case '*': removeCurrentElementMoveBackward(); break;
+		case '#': removeCurrentElementMoveForward(); break;
 		default:
 			//no key assigned to 0 while reading letters
 			if(key && key != '0'){
@@ -528,91 +527,18 @@ void InputLine::readLetters(char key){
 				}
 					
 			} 
-			
-		
 		break;
 		}
 }
 
 void InputLine::readNumbers(char key){
-	
 	switch (key){
-		
-		case 'A': break;
-		
-		case 'B':
-		    //move cursor forwards if there is still space in this field
-			// else jump to next input field
-			if(cursorPoint < active->finish){
-				cursorPoint++;
-				cursorMove = false;
-				displayInput();
-			} else {
-				if(jumpField(true, true, true)){
-					displayInput();
-				}
-			}
-		break;
-		
-		case 'C':
-		    //move cursor backwards if there is still space in this field
-			// else jump to previous input field
-			if(cursorPoint > active->start){
-				cursorPoint--;
-				cursorMove = false;
-				displayInput();
-			} else {
-				if(jumpField(false, true, true)){
-					displayInput();
-				}
-			}
-		  break;
-		  
-		case 'D': 
-			// if alphanumeric input is active, allow switching between letters/numbers
-			if(active->inputMode == 3){
-				if(currentReadMode == 1){
-					currentReadMode = 0;
-				} else {
-					currentReadMode = 1;
-				}
-				if(active->smartInput){
-					active->defaultInputMode = currentReadMode;
-				}
-				cursorMove = false;
-				cursorMoveTimer = CURSORMOVETIME;
-			}
-		break;
-		
-		case '*':
-			// remove current element from active input field
-			// else jump to previous input field and remove last element
-			if(cursorPoint > active->start){
-				inputLine[cursorPoint] = ' ';
-				cursorPoint--;
-				displayInput();
-				cursorMove = false;
-			} else if(cursorPoint == active->start) {
-				inputLine[cursorPoint] = ' ';
-				jumpField(false, false, true);
-				displayInput();
-			}		
-		break;
-		case '#':
-			// remove current element from active input field
-			// else jump to next input field and remove first element
-			if(cursorPoint < active->finish){
-				inputLine[cursorPoint] = ' ';
-				displayInput();
-				cursorPoint++;
-				cursorMove = false;
-				cursorMoveTimer = CURSORMOVETIME;				
-			} else if(cursorPoint == active->finish){
-				inputLine[cursorPoint] = ' ';
-				jumpField(true, false, true);
-				displayInput();
-			}
-		break;
+		case 'A': enableInput(false); break;
+		case 'B': moveCursorForward(); break;
+		case 'C': moveCursorBackward(); break;		  
+		case 'D': switchInputMode(); break;
+		case '*': removeCurrentElementMoveBackward(); break;
+		case '#': removeCurrentElementMoveForward(); break;
 		default:
 			if(key){
 				if(cursorPoint <= active->finish){

@@ -4,6 +4,11 @@ with labels and input fields
 input fields can be numeric, alphabetic or alphanumeric
 */
 
+/*  LCD screen column size */
+#ifndef SCREENCOLUMNSIZE
+#define SCREENCOLUMNSIZE 16
+#endif
+
 /* input cursor blink rate in milliseconds */
 #ifndef CURSORBLINKRATE
 #define CURSORBLINKRATE 20
@@ -13,6 +18,7 @@ input fields can be numeric, alphabetic or alphanumeric
 #define CURSORMOVETIME 200
 #endif
 
+/* include libraries for LCD and Keypad */
 #include <Wire.h>
 #include <Keypad_I2C.h>
 #include <Keypad.h>
@@ -36,12 +42,12 @@ struct InputField{
 	struct InputField *previous;
 };
 
-
 //class Keypad : public Key, public HAL_obj {
 class InputLine{
 public:
 
-	InputLine(int inputRows, int screenColumnSize, bool cyclicRotation, LiquidCrystal *lcdRef, Keypad_I2C *kpd);
+	InputLine(int inputRows, bool cyclicRotation, LiquidCrystal *lcdRef, Keypad_I2C *kpd);
+
 	bool addLabel(char* text);
 	bool addLabel(int start, char* text);
 	
@@ -68,7 +74,6 @@ private:
 	
 	int row;
 	int noOfInputFields;
-	int screenColumnSize;
 	int cursorPoint;
 	int currentReadMode;
 	int cursorWait;
@@ -90,14 +95,18 @@ private:
 	void cursorBlinker();
 	void readNumbers(char key);
 	void readLetters(char key);
-	
+	void moveCursorForward();
+	void moveCursorBackward();
+	void removeCurrentElementMoveForward();
+	void removeCurrentElementMoveBackward();
+	void switchInputMode();
 	//jump to next or previous input field
 	bool jumpField(bool jumpNext, bool doCyclicRotation, bool resetCursorMove);
 	
 	struct InputField *inputs;
 	struct InputField *active;
-	char inputLine[16];
-	bool avaliable[16];
+	char inputLine[SCREENCOLUMNSIZE];
+	bool avaliable[SCREENCOLUMNSIZE];
 	char* textToReturn;
 };
 
