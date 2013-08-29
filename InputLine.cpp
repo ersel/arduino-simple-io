@@ -412,11 +412,13 @@ bool InputLine::addInputField(int start, int length, int inputMode, int defaultI
 		free(textToReturn);
 	}
 	
-	int length = iterator->finish - iterator->start;
+	int length = iterator->finish - iterator->start + 1;
 	
 	textToReturn = (char*) malloc (length*sizeof(char));
+	textToReturn[0] = '\0';
 	int index = 0;
 	for(int i = iterator->start; i <= iterator->finish; i++){
+		textToReturn[index+1] = textToReturn[index];
 		textToReturn[index++] = inputLine[i];
 	}
 	return textToReturn;
