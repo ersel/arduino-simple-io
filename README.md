@@ -17,6 +17,7 @@ Configuration & Set-up
 =================
 In <b>InputLine.h</b><br>
 Include the libraries you use with your LCD and KeyPad.<br>
+On <b>Line: 9</b> Update SCREENCOLUMNSIZE to match your LCD screen's column number.<br>
 On <b>Line: 49</b> Update the paramaters' types in the constructor definition according to your LCD and KeyPad Classes.<br>
 On <b>Line 71</b> and <b>72</b> update keypad and lcd types according to your LCD and Keypad Classes.<br>
 <br>
@@ -26,6 +27,7 @@ Update the implementation of these functions according to methods avaliable in y
   <b>InputLine::void lcdSetCursor(int col, int row)<br>
   InputLine::	void lcdPrint(char c)<br>
   InputLine::	char keyPadReadKey()</b><br>
+
 
 Usage & Public Methods
 =================
@@ -78,4 +80,5 @@ Notes
 I have developed this library to make it easier to develop more user oriented applications using LCD and KeyPad with Arduino.<br>
 I have tested the library on Arduino Uno R3, it should work on other versions as well.<br>
 If you have found any bugs, have some improvement ideas or need help setting/porting the library drop a comment on the repository.<br>
-Enjoy :)
+Enjoy, happy developing :)
+- Ersel 29/08/2013
