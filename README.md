@@ -81,4 +81,3 @@ I have developed this library to make it easier to develop more user oriented ap
 I have tested the library on Arduino Uno R3, it should work on other versions as well.<br>
 If you have found any bugs, have some improvement ideas or need help setting/porting the library drop a comment on the repository.<br>
 Enjoy, happy developing :)
-- Ersel 29/08/2013
