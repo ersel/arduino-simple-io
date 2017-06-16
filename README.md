@@ -2,7 +2,7 @@ Arduino Simple Input Output Library
 =================
 A simple input output library to use Arduino with keypad and LCD.
 
-[![Arduino IO Demo](http://img.youtube.com/vi/ON8X_u2eM2M/0.jpg)](http://www.youtube.com/watch?v=SW2PuoBAy5k "Arduino IO Demo")
+[![Arduino IO Demo](http://img.youtube.com/vi/ON8X_u2eM2M/0.jpg)](http://www.youtube.com/watch?v=ON8X_u2eM2M "Arduino IO Demo")
 
 Features
 =================
